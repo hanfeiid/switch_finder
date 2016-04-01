@@ -12,11 +12,9 @@ find_package(catkin REQUIRED COMPONENTS
 
 find_package(OpenCV REQUIRED)
 
-
 ################################################
 ## Declare ROS messages, services and actions ##
 ################################################
-
 ## Generate added messages and services with any dependencies listed here
 generate_messages(
    DEPENDENCIES
@@ -24,22 +22,18 @@ generate_messages(
    std_msgs
  )
 
-
 ###################################
 ## catkin specific configuration ##
 ###################################
-
 catkin_package(
   INCLUDE_DIRS include
   CATKIN_DEPENDS cv_bridge image_transport roscpp rospy sensor_msgs std_msgs
   DEPENDS opencv2
 )
 
-
 ###########
 ## Build ##
 ###########
-
 include_directories(
   ${catkin_INCLUDE_DIRS}
   ${OpenCV_INCLUDE_DIRS}
