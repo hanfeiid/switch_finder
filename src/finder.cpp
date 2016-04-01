@@ -10,29 +10,19 @@
 std::vector<cv::Point2f> findSquare(cv::Mat imageInput);
 void readBitMatrix(cv::Mat imageMarker, int cellSize, int bitMatrix[10][10]);
 
+// detect the artag in the image
 int detectArtag(cv::Mat &imageInput)
 {
-  
   ARTag arTag;
-
-  // Camera intrinsic matrix
-  double K_[3][3] =
-  { { 675, 0, 320 },
-  { 0, 675, 240 },
-  { 0, 0, 1 } };
-  cv::Mat K = cv::Mat(3, 3, CV_64F, K_).clone();
-  cv::Mat dist = cv::Mat::zeros(5, 1, CV_64F); // distortion coeffs
 
   cv::Mat imageInputGray;
   cv::cvtColor(imageInput, imageInputGray, cv::COLOR_BGR2GRAY);
   std::vector<cv::Point2f> squareCorners;
   squareCorners = findSquare(imageInputGray);
   if (squareCorners.size() == 0) {
-    //cv::imshow("My Image", imageInput);
-    // Wait for xx ms (0 means wait until a keypress)
-    cv::waitKey(10);
+    cv::waitKey(10);  // Wait for 10 ms
     ROS_INFO("The id is [-1]");
-    return -1; // hit ESC (ascii code 27) to quit
+    return -1;
   }
   // Draw contour as a sequence of line segments.
   cv::Scalar color = cv::Scalar(0, 0, 255);
@@ -45,7 +35,6 @@ int detectArtag(cv::Mat &imageInput)
       8); // line connectivity
   }
 
-  //cv::imshow("My Image", imageInput);
   cv::waitKey(10);
 
   // Create a list of "ortho" square corner points.
@@ -73,95 +62,31 @@ int detectArtag(cv::Mat &imageInput)
   // Identify the marker.
   int id = -1; // marker id
   if (!arTag.identifyMarker(bitMatrix, id, squareCorners)) {
-    // Show the image.
-    //cv::imshow("My Image", imageInput);
+    //cv::imshow("My Image", imageInput); // Show the image.
     ROS_INFO("The id is [%d]", id);
-    // Wait for xx ms (0 means wait until a keypress)
-    return -1; // hit ESC (ascii code 27) to quit
+    return -1;
   }
   ROS_INFO("The id is [%d]", id);
-  // Display the marker id number.
-  //
-  //char sz[80];
-  //sprintf_s(sz, "%d", id);
-  //putText(imageInput, sz, cv::Point(320, 240),
-  //  cv::FONT_HERSHEY_PLAIN, // font face
-  //  3.0, // font scale
-  //  cv::Scalar(0, 255, 255), // font color
-  //  3);
-  //
-
-  /*
-  // Refine corner locations.
-  cv::cornerSubPix(imageInputGray,
-    squareCorners,
-    cv::Size(5, 5),
-    cv::Size(-1, -1),
-    cv::TermCriteria(CV_TERMCRIT_ITER, 30, 0.1));
-  // Create a list of 3D marker corner points.
-  std::vector<cv::Point3f> marker3D;
-  marker3D.push_back(cv::Point3f(-1.0f, -1.0f, 0));
-  marker3D.push_back(cv::Point3f(+1.0f, -1.0f, 0));
-  marker3D.push_back(cv::Point3f(+1.0f, +1.0f, 0));
-  marker3D.push_back(cv::Point3f(-1.0f, +1.0f, 0));
-  // Compute pose of marker with respect to camera.
-  cv::Mat rotVec, transVec;
-  bool foundPose = cv::solvePnP(marker3D, squareCorners,
-    K, // intrinsic camera parameter matrix
-    dist, // distortion coefficients
-    rotVec, transVec); // output rotation and translation
-
-  if (foundPose)
-  {
-    std::vector<cv::Point3d> pointsAxes;
-    std::vector<cv::Point2d> pointsImage;
-    
-    // Draw the xyz coordinate axes on the image.
-    pointsAxes.push_back(cv::Point3d(0, 0, 0)); // origin
-    pointsAxes.push_back(cv::Point3d(1, 0, 0)); // x axis
-    pointsAxes.push_back(cv::Point3d(0, 1, 0)); // y axis
-    pointsAxes.push_back(cv::Point3d(0, 0, 1)); // z axis
-
-    cv::projectPoints(pointsAxes, rotVec, transVec, K, dist, pointsImage);
-
-    line(imageInput, pointsImage[0], pointsImage[1], cv::Scalar(0, 0, 255), 2);
-    line(imageInput, pointsImage[0], pointsImage[2], cv::Scalar(0, 255, 0), 2);
-    line(imageInput, pointsImage[0], pointsImage[3], cv::Scalar(255, 0, 0), 2);
-
-
-    // Find the projected image position of the power button
-    std::vector<cv::Point3d> pointAxesButton; // the button position in 3D world coordinate
-    std::vector<cv::Point2d> pointsImageButton; // the button position in 2D image coordinate
-    if (id == 0)  // for oscilloscope
-    {
-      pointAxesButton.push_back(cv::Point3d(-11.5, 1.75, 0));
-    }
-    else if (id == 1) // for multimeter
-    {
-      pointAxesButton.push_back(cv::Point3d(-3.5, 3.0, 2.75));
-    }
-    cv::projectPoints(pointAxesButton, rotVec, transVec, K, dist, pointsImageButton);
-    CvPoint center = pointsImageButton[0];
-    circle(imageInput, center, 20, cv::Scalar(0, 255, 255), 2);
-
-  }
-
-  // Show the image.
-  //cv::imshow("My Image", imageInput);
-  */
-  return id;
   
+  return id;
 }
 
-// reader node to show camera images
+
+// imageCallback() functionality:
+// 1. receive and read the Kinect rgb image message
+// 2. detect artag
+// 3. broadcast the artag infomation
 void imageCallback(const sensor_msgs::ImageConstPtr& msg)
 {
   try
   {
+    // change ros image message to opencv format
     cv::Mat frame = cv_bridge::toCvShare(msg, "bgr8")->image;
-    //cv::imshow("kinect view", frame);
+
+    // detect the artag
     int id = detectArtag(frame);
 
+    // broadcast the artag info
     ros::NodeHandle n_id;
     ros::Publisher id_pub = n_id.advertise<std_msgs::String>("id_pub", 1000);
     ros::Rate loop_rate(100);
@@ -176,15 +101,16 @@ void imageCallback(const sensor_msgs::ImageConstPtr& msg)
       id_pub.publish(id_msg);
       ros::spinOnce();
       loop_rate.sleep();
-
       cv::waitKey(10);
     }
   }
+  
   catch (cv_bridge::Exception& e)
   {
     ROS_ERROR("Could not convert from '%s' to 'bgr8'.", msg->encoding.c_str());
   }
 }
+
 
 int main(int argc, char **argv)
 {
