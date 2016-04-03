@@ -11,8 +11,8 @@ ImgSubAndTagPub::ImgSubAndTagPub()
 {
 	// image topic to subscribe
 	image_transport::ImageTransport it(n_);
-	//sub_ = it.subscribe("camera/rgb/image_color", 1, &ImgSubAndTagPub::imageCallback, this);
-	sub_ = it.subscribe("cv_camera/image_raw", 1, &ImgSubAndTagPub::imageCallback, this);
+	sub_ = it.subscribe("camera/rgb/image_color", 1, &ImgSubAndTagPub::imageCallback, this);
+	//sub_ = it.subscribe("cv_camera/image_raw", 1, &ImgSubAndTagPub::imageCallback, this);
 	// id to publish
 	id_pub_ = n_.advertise<std_msgs::String>("switch_finder/id_pub",1);
 	// origin coordinate to publish
