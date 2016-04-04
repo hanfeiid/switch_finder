@@ -20,7 +20,7 @@ find_package(OpenCV REQUIRED)
 ## Generate messages in the 'msg' folder
 add_message_files(
    FILES
-   point.msg
+   Point.msg
  )
 
 ## Generate added messages and services with any dependencies listed here
@@ -53,7 +53,7 @@ include_directories(
 )
 
 add_executable(finder src/finder.cpp src/detectId.cpp src/imgSubAndTagPub.cpp src/ARTag.cpp)
-target_link_libraries(finder 
+target_link_libraries(finder
   ${catkin_LIBRARIES}
   ${OpenCV_LIBS}
   )
