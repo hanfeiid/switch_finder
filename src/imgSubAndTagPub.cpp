@@ -4,21 +4,21 @@
 #include <switch_finder/imgSubAndTagPub.h>
 #include <image_transport/image_transport.h>
 #include <cv_bridge/cv_bridge.h>
-#include <switch_finder/point.h>
+#include <switch_finder/Point.h>
 #include <switch_finder/detectId.h>
 
 ImgSubAndTagPub::ImgSubAndTagPub()
 {
 	// image topic to subscribe
 	image_transport::ImageTransport it(n_);
-	sub_ = it.subscribe("camera/rgb/image_color", 1, &ImgSubAndTagPub::imageCallback, this);
-	//sub_ = it.subscribe("cv_camera/image_raw", 1, &ImgSubAndTagPub::imageCallback, this);
+	//sub_ = it.subscribe("camera/rgb/image_color", 1, &ImgSubAndTagPub::imageCallback, this);
+	sub_ = it.subscribe("cv_camera/image_raw", 1, &ImgSubAndTagPub::imageCallback, this);
 	// id to publish
 	id_pub_ = n_.advertise<std_msgs::String>("switch_finder/id_pub",1);
 	// origin coordinate to publish
-	origin_pub_ = n_.advertise<switch_finder::point>("switch_finder/origin_pub", 1);
+	origin_pub_ = n_.advertise<switch_finder::Point>("switch_finder/origin_pub", 1);
 	// z_axis coordinate to publish
-	z_axis_pub_ = n_.advertise<switch_finder::point>("switch_finder/z_axis_pub", 1);
+	z_axis_pub_ = n_.advertise<switch_finder::Point>("switch_finder/z_axis_pub", 1);
 }
 
 void ImgSubAndTagPub::imageCallback(const sensor_msgs::ImageConstPtr & msg)
@@ -42,12 +42,12 @@ void ImgSubAndTagPub::imageCallback(const sensor_msgs::ImageConstPtr & msg)
 			id_msg.data = ss.str();
 			id_pub_.publish(id_msg);
 
-			switch_finder::point origin_msg;
+			switch_finder::Point origin_msg;
 			origin_msg.x = origin.x;
 			origin_msg.y = origin.y;
 			origin_pub_.publish(origin_msg);
 
-			switch_finder::point z_axis_msg;
+			switch_finder::Point z_axis_msg;
 			z_axis_msg.x = z_axis.x;
 			z_axis_msg.y = z_axis.y;
 			z_axis_pub_.publish(z_axis_msg);
