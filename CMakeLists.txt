@@ -52,9 +52,9 @@ include_directories(
   include
 )
 
-add_executable(finder src/finder.cpp src/detectId.cpp src/imgSubAndTagPub.cpp src/ARTag.cpp)
-target_link_libraries(finder
+add_executable(switch_finder src/switch_finder.cpp src/detectId.cpp src/imgSubAndTagPub.cpp src/ARTag.cpp)
+target_link_libraries(switch_finder
   ${catkin_LIBRARIES}
   ${OpenCV_LIBS}
   )
-add_dependencies(finder switch_finder_generate_messages_cpp)
+add_dependencies(switch_finder switch_finder_generate_messages_cpp)
